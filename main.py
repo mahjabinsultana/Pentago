@@ -4,8 +4,9 @@ import sys
 from pentago.constants import WIDTH, HEIGHT, BLACK, CREAM, WHITE, ROWS, SQAURE_SIZE
 from pentago.board import Board
 from pentago.game import Game
+from pentago.minimax.algo import minimax, iterative_deepening
 FPS = 60
-
+mode = 0
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Pentago')
 # Define the initial boards
@@ -74,64 +75,89 @@ def select_grid_to_rotate(x,y):
 
 
 def game_over(winner): # when game is over it is called, winner name will showed in the display
-    """""
+    if(winner == -1):
+        print("user won")
+    else:
+        print("ai won")
+
+
+def select_mode():
     run = True
     main_font = pygame.font.SysFont("comicsans", 50)
     while run:
-        WIN.blit(CREAM, (0, 0))
         
-        pygame.draw.rect(WIN,(116, 116, 116), (0, 400, WIDTH+200, 100))
-        
-        if(winner == 1):
-            livees_label = main_font.render(f"YOU WIN", 1, WHITE)
-            WIN.blit(livees_label, (livees_label.get_width()+150, 400+20))
-        else:
-            livees_label = main_font.render(f"YOU LOSE", 1, WHITE)
-            WIN.blit(livees_label, (livees_label.get_width()+130, 400+20))
-            
+        #WIN.fill(RED)
+        screen = pygame.transform.scale(pygame.image.load('pentago\img\mode.png'), (WIDTH,HEIGHT))
+        WIN.blit(screen,(0,0))
+        pygame.display.update()
+    
         for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                print(x,y) 
+                if x>=710 and x<=769 and y>=52 and y<=85:
+                    in_screen()
+                if x>=214 and x<=593 and y>=245 and y<=310:
+                    mode = 1
+                if x>=214 and x<=593 and y>=332 and y<=397:
+                    mode = 2
+                if x>=214 and x<=593 and y>=421 and y<=485:
+                    mode = 3
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()    
+
+def game_rules():
+    run = True
+    main_font = pygame.font.SysFont("comicsans", 50)
+    while run:
+        
+        #WIN.fill(RED)
+        screen = pygame.transform.scale(pygame.image.load('pentago\img\gamerules.png'), (WIDTH,HEIGHT))
+        WIN.blit(screen,(0,0))
+        pygame.display.update()
+    
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                print(x,y) 
+                if x>=710 and x<=769 and y>=52 and y<=85:
+                    in_screen()
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()      
+
+def in_screen():
+    run = True
+    main_font = pygame.font.SysFont("comicsans", 50)
+    while run:
+        
+        #WIN.fill(RED)
+        screen = pygame.transform.scale(pygame.image.load('pentago\img\initial_screen.png'), (WIDTH,HEIGHT))
+        WIN.blit(screen,(0,0))
+        pygame.display.update()
+    
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                if x>=441 and x<=686 and y>=329 and y<=386:
+                    select_mode()
+                if x>=441 and x<=686 and y>=437 and y<=495:
+                    game_rules()    
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-    """
-    # Create a font object
-    main_font = pygame.font.SysFont("comicsans", 50)
-    if(winner == 1):
-        message = "You won"
-    elif(winner==-1):
-       message = "AI won"
-    message_surface = main_font.render(message, True, WHITE)
+        
+       
+ 
 
-    # Main loop
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        # Clear the window
-        WIN.fill((0, 0, 0))
-
-        # Blit the message onto the window
-        WIN.blit(message_surface, (300, 300))
-
-        # Update the display
-        pygame.display.update()
-
-    
-
-    
-    
-
-
-
-def main():
+def main_game():
     run = True
     clock = pygame.time.Clock()
     ## constant fps maintain kore game run korar jono. 
     ## pc'r speed er upor depend korbe na
     board = Board()
-
+    print("board declared", board.board)
     #
     WIN.fill(CREAM)
     board.draw_cubes(WIN)
@@ -140,46 +166,42 @@ def main():
     pygame.display.update()
 
     game = Game(WIN, board)
+    print("initial board ", game.get_board().board)
     while run:
         clock.tick(FPS)
 
         if game.turn == WHITE:
            pygame.display.set_caption('AI')
-           #value, new_board = minimax(game.get_board(), 3, WHITE, game)
-           #game.ai_move(new_board)
-           #print(value)
+           new_board = iterative_deepening(game.get_board(), 10, WHITE, game)
+           game.ai_move(new_board)
         else:
            pygame.display.set_caption('Your turn')
+           for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = pygame.mouse.get_pos()
+                    print(x, y)
+                    row, col = select_row_col(x,y)
+                    grid_no, rotation = select_grid_to_rotate(x, y)
+                    if not game.move:
+                        game.place_marble(WIN, row, col)
+                    if game.move and not game.rotate:
+                        game.rotate_quad(WIN, grid_no, rotation)
+                    if game.move and game.rotate:
+                        game.change_turn()
+                   # board.get_valid_moves()
+                game.update()
         
-        if board.winner()!= 0:
-            print(board.winner())
-            
-            game_over(board.winner())
+        #print("game update",game.get_board())
+        #print("win ", board.winner())
+        if game.board.winner()!= 0:
+            print(game.board.winner())    
+            game_over(game.board.winner())
             run = False
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = pygame.mouse.get_pos()
-                print(x, y)
-                row, col = select_row_col(x,y)
-                grid_no, rotation = select_grid_to_rotate(x, y)
-                if not game.move:
-                    game.place_marble(WIN, row, col)
-                if game.move and not game.rotate:
-                    game.rotate_quad(WIN, grid_no, rotation)
-                if game.move and game.rotate:
-                    game.change_turn()
-                board.get_valid_moves()
-                
-                
-                
 
-                
-        game.update()
                     
     pygame.quit()
     
-main()
+in_screen()

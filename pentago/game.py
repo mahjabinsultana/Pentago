@@ -14,6 +14,7 @@ class Game:
     def update(self):
         self.board.draw_cubes(self.win)
         pygame.display.update()
+        
     """""
     def winner(self):
         return self.board.winner()
@@ -36,8 +37,9 @@ class Game:
     
     def ai_move(self, board):
         pygame.display.set_caption('AI Turn')
-        pygame.time.delay(5000)
+        #pygame.time.delay(5000)
         self.board = board
+        self.update()
         self.change_turn()
     
 
@@ -45,7 +47,7 @@ class Game:
         if self.move == False and self.rotate == False:
             if row >= 0 and row <= 5 and col >= 0 and col <= 5:
                 self.board.draw(row,col, self.turn)
-                self.board.draw_cubes(win)
+                #self.board.draw_cubes(win)
                 print("Selected row:", row)
                 print("Selected col:", col)
                 pygame.display.update()
@@ -60,7 +62,7 @@ class Game:
             if grid_no != -1:
                 print(grid_no, rotation)
                 self.board.rotate(grid_no, rotation)
-                self.board.draw_cubes(win)
+               # self.board.draw_cubes(win)
                 self.rotate = True
                 pygame.display.update()
                 return True

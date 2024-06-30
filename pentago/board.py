@@ -142,7 +142,7 @@ class Board:
                 self.board[selected_row][selected_col] = 1 # 1 means user has given input
             elif turn == BLACK:
                 self.board[selected_row][selected_col] = -1 # -1 means AI has given input
-        print(self.board)
+        
    
 
     def rotate_board(self, start_row, end_row, start_col, end_col, rotate):
@@ -160,7 +160,6 @@ class Board:
     # Replace the portion in the original matrix with the rotated portion
         my_board[start_row:end_row + 1, start_col:end_col + 1] = rotated_portion
         self.board = my_board.tolist()
-        print("ROTATED BOARD ",self.board)
 
         #return matrix
 
@@ -203,24 +202,139 @@ class Board:
                     moves.add((row, col, 2, 'anticlockwise'))  # Add anticlockwise move
                     moves.add((row, col, 3, 'clockwise'))  # Add clockwise move
                     moves.add((row, col, 3, 'anticlockwise'))  # Add anticlockwise move
-        for move in moves:
-            print(move)
         return moves
        
-    
+    """"
     def evaluate(self):  #minimax algor jonno evaluation function, ki logic hobe janina
-        count_b = 0
-        max_b = 0
-        count_w = 0
-        for row in ROWS:
-            for col in COLS:
-                if(self.board[row][col]==-1):
-                    count_b += 1
-                    max_b = max(max_b, count_b)
-                else:
-                    count_b = 0
+        ai_win=0
+        user_win=0
+        print("inside evalutaion function ", self.board)
+        # Check horizontal
+        for row in range(6):
+            for col in range(2):
+                if all(self.board[row][col+i] != 1 for i in range(5)):
+                    ai_win += 1
+                if all(self.board[row][col+i] != -1 for i in range(5)):
+                    user_win += 1    
+
+        # Check vertical
+        for col in range(6):
+            for row in range(2):
+                if all(self.board[row+i][col] != 1 for i in range(5)):
+                    ai_win += 1
+                if all(self.board[row+i][col] != -1 for i in range(5)):
+                    user_win += 1
+
+        # Check main diagonal
+        for row in range(2):
+            for col in range(2):
+                if all(self.board[row+i][col+i] != 1 for i in range(5)):
+                    ai_win += 1
+                if all(self.board[row+i][col+i] != -1 for i in range(5)):
+                    user_win += 1
+
+        # Check anti-diagonal
+        for row in range(2):
+            for col in range(4, 6):
+                if all(self.board[row+i][col-i] != 1 for i in range(5)):
+                    ai_win += 1
+                if all(self.board[row+i][col-i] != -1 for i in range(5)):
+                    user_win += 1
+
+
+        return (ai_win - user_win)
     
 
+    def check_win(board, player):
+        # Check rows, columns and diagonals for a win
+        for row in range(len(board)):
+            for col in range(len(board[row]) - 4 + 1):
+                if all(board[row][col + i] == player for i in range(4)):
+                    return True
+
+        for col in range(len(board[0])):
+            for row in range(len(board) - 4 + 1):
+                if all(board[row + i][col] == player for i in range(4)):
+                    return True
+
+        for row in range(len(board) - 4 + 1):
+            for col in range(len(board[row]) - 4 + 1):
+                if all(board[row + i][col + i] == player for i in range(4)):
+                    return True
+                if all(board[row + 3 - i][col + i] == player for i in range(4)):
+                    return True
+
+        return False
+
+    def is_board_full(board):
+        return all(cell != 0 for row in board for cell in row)
+
+    def check_4_in_a_row(board, player):
+        # Similar to check_win but returns the count of 4 in a row occurrences
+        count = 0
+        for row in range(len(board)):
+            for col in range(len(board[row]) - 4 + 1):
+                if all(board[row][col + i] == player for i in range(4)):
+                    count += 1
+
+        for col in range(len(board[0])):
+            for row in range(len(board) - 4 + 1):
+                if all(board[row + i][col] == player for i in range(4)):
+                    count += 1
+
+        for row in range(len(board) - 4 + 1):
+            for col in range(len(board[row]) - 4 + 1):
+                if all(board[row + i][col + i] == player for i in range(4)):
+                    count += 1
+                if all(board[row + 3 - i][col + i] == player for i in range(4)):
+                    count += 1
+
+        return count > 0
+
+    def check_3_in_a_row(board, player):
+        # Similar to check_4_in_a_row but for 3 in a row occurrences
+        count = 0
+        for row in range(len(board)):
+            for col in range(len(board[row]) - 3 + 1):
+                if all(board[row][col + i] == player for i in range(3)):
+                    count += 1
+
+        for col in range(len(board[0])):
+            for row in range(len(board) - 3 + 1):
+                if all(board[row + i][col] == player for i in range(3)):
+                    count += 1
+
+        for row in range(len(board) - 3 + 1):
+            for col in range(len(board[row]) - 3 + 1):
+                if all(board[row + i][col + i] == player for i in range(3)):
+                    count += 1
+                if all(board[row + 2 - i][col + i] == player for i in range(3)):
+                    count += 1
+
+        return count > 0
+
+
+    def evaluate(board):
+        if check_win(board, 1) and check_win(board, 2):
+            return 10
+        if check_win(board, 1):
+            return 5
+        if check_win(board, 2):
+            return -5
+        if is_board_full(board):
+            return 0
+        # Further evaluation logic for intermediate states
+        score = 0
+        if check_4_in_a_row(board, 1):
+            score += 3
+        if check_4_in_a_row(board, 2):
+            score -= 3
+        if check_3_in_a_row(board, 1):
+            score += 1
+        if check_3_in_a_row(board, 2):
+            score -= 1
+        return score
+    """
     def winner(self): # check korbe row,column or diagonally same value ache kina, winner identify korbe.
         # Check horizontal
         for row in range(6):
