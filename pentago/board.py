@@ -8,8 +8,6 @@ class Board:
     def __init__(self):
         self.board = []
         self.selected_piece = None
-        self.black_left = 18
-        self.white_left = 18
         self.b_left =18
         self.w_left = 18
         self.create_board()
@@ -50,6 +48,7 @@ class Board:
         for row in range(ROWS):
             for col in range(COLS):
                 if self.board[row][col]==1:
+
                     # draw circle
                     x = 190+ (SQAURE_SIZE//2) + (SQAURE_SIZE//2)*(col*2) 
                     y= 90 + (SQAURE_SIZE//2) + (SQAURE_SIZE//2)*(row*2)
@@ -57,6 +56,15 @@ class Board:
                     # x,y will be centre
                     # Draw the filled circle
                     pygame.draw.circle(win, WHITE, (x,y), 25)
+                elif self.board[row][col]==-1:
+                    # draw circle
+                    x = 190+ (SQAURE_SIZE//2) + (SQAURE_SIZE//2)*(col*2) 
+                    y= 90 + (SQAURE_SIZE//2) + (SQAURE_SIZE//2)*(row*2)
+
+                    # x,y will be centre
+                    # Draw the filled circle
+                    pygame.draw.circle(win, BLACK, (x,y), 25)
+        
 
     def draw_marbles(self, win):
         radius = 10
@@ -127,17 +135,13 @@ class Board:
         except:
             return None
         
-    def draw(self,win,selected_row,selected_col):
-        #for row in range(ROWS):
-            #for col in range(COLS):
+    def draw(self,selected_row,selected_col, turn):
         piece = self.board[selected_row][selected_col]
         if piece ==0:
-        #    piece.draw(win)
-            self.board[selected_row][selected_col] = 1 # 1 means user has given input
-
-        self.draw_cubes(win)
-
-        #self.board.append(Piece(selected_row,selected_col,WHITE))
+            if turn == WHITE:
+                self.board[selected_row][selected_col] = 1 # 1 means user has given input
+            elif turn == BLACK:
+                self.board[selected_row][selected_col] = -1 # -1 means AI has given input
         print(self.board)
    
 
@@ -184,3 +188,87 @@ class Board:
                 end_col = 5
             
             self.rotate_board(start_row,end_row,start_col,end_col,rotation)
+
+    
+    def get_valid_moves(self):
+        moves = set()  # Initialize moves as a set
+        for row in range(ROWS):
+            for col in range(COLS):
+                if self.board[row][col] == 0:
+                    moves.add((row, col, 0, 'clockwise'))  # Add clockwise move
+                    moves.add((row, col, 0, 'anticlockwise'))  # Add anticlockwise move
+                    moves.add((row, col, 1, 'clockwise'))  # Add clockwise move
+                    moves.add((row, col, 1, 'anticlockwise'))  # Add anticlockwise move
+                    moves.add((row, col, 2, 'clockwise'))  # Add clockwise move
+                    moves.add((row, col, 2, 'anticlockwise'))  # Add anticlockwise move
+                    moves.add((row, col, 3, 'clockwise'))  # Add clockwise move
+                    moves.add((row, col, 3, 'anticlockwise'))  # Add anticlockwise move
+        for move in moves:
+            print(move)
+        return moves
+       
+    
+    def evaluate(self):  #minimax algor jonno evaluation function, ki logic hobe janina
+        count_b = 0
+        max_b = 0
+        count_w = 0
+        for row in ROWS:
+            for col in COLS:
+                if(self.board[row][col]==-1):
+                    count_b += 1
+                    max_b = max(max_b, count_b)
+                else:
+                    count_b = 0
+    
+
+    def winner(self): # check korbe row,column or diagonally same value ache kina, winner identify korbe.
+        # Check horizontal
+        for row in range(6):
+            for col in range(2):
+                if all(self.board[row][col+i] == 1 for i in range(5)):
+                    return 1
+
+        # Check vertical
+        for col in range(6):
+            for row in range(2):
+                if all(self.board[row+i][col] == 1 for i in range(5)):
+                    return 1
+
+        # Check main diagonal
+        for row in range(2):
+            for col in range(2):
+                if all(self.board[row+i][col+i] == 1 for i in range(5)):
+                    return 1
+
+        # Check anti-diagonal
+        for row in range(2):
+            for col in range(4, 6):
+                if all(self.board[row+i][col-i] == 1 for i in range(5)):
+                    return 1
+
+
+        # Check horizontal
+        for row in range(6):
+            for col in range(2):
+                if all(self.board[row][col+i] == -1 for i in range(5)):
+                    return -1
+
+        # Check vertical
+        for col in range(6):
+            for row in range(2):
+                if all(self.board[row+i][col] == -1 for i in range(5)):
+                    return -1
+
+        # Check main diagonal
+        for row in range(2):
+            for col in range(2):
+                if all(self.board[row+i][col+i] == -1 for i in range(5)):
+                    return -1
+
+        # Check anti-diagonal
+        for row in range(2):
+            for col in range(4, 6):
+                if all(self.board[row+i][col-i] == -1 for i in range(5)):
+                    return -1
+        
+        return 0

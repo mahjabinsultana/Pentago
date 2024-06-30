@@ -1,4 +1,6 @@
 import pygame
+#pygame.font.init()
+import sys
 from pentago.constants import WIDTH, HEIGHT, BLACK, CREAM, WHITE, ROWS, SQAURE_SIZE
 from pentago.board import Board
 from pentago.game import Game
@@ -70,6 +72,59 @@ def select_grid_to_rotate(x,y):
         rotate = "anticlockwise"
     return grid_no,rotate
 
+
+def game_over(winner): # when game is over it is called, winner name will showed in the display
+    """""
+    run = True
+    main_font = pygame.font.SysFont("comicsans", 50)
+    while run:
+        WIN.blit(CREAM, (0, 0))
+        
+        pygame.draw.rect(WIN,(116, 116, 116), (0, 400, WIDTH+200, 100))
+        
+        if(winner == 1):
+            livees_label = main_font.render(f"YOU WIN", 1, WHITE)
+            WIN.blit(livees_label, (livees_label.get_width()+150, 400+20))
+        else:
+            livees_label = main_font.render(f"YOU LOSE", 1, WHITE)
+            WIN.blit(livees_label, (livees_label.get_width()+130, 400+20))
+            
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+    """
+    # Create a font object
+    main_font = pygame.font.SysFont("comicsans", 50)
+    if(winner == 1):
+        message = "You won"
+    elif(winner==-1):
+       message = "AI won"
+    message_surface = main_font.render(message, True, WHITE)
+
+    # Main loop
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        # Clear the window
+        WIN.fill((0, 0, 0))
+
+        # Blit the message onto the window
+        WIN.blit(message_surface, (300, 300))
+
+        # Update the display
+        pygame.display.update()
+
+    
+
+    
+    
+
+
+
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -81,60 +136,44 @@ def main():
     WIN.fill(CREAM)
     board.draw_cubes(WIN)
     pygame.display.update()
-    board.draw_marbles(WIN)
-    pygame.display.update()
     board.draw_rotatesym(WIN)
     pygame.display.update()
 
-    game = Game(WIN)
-
-    flag1= 0
-    flag2 = 0
+    game = Game(WIN, board)
     while run:
         clock.tick(FPS)
 
-        if game.turn == BLACK: #black mane ai move dibe
-            game.ai_move(board)
-
+        if game.turn == WHITE:
+           pygame.display.set_caption('AI')
+           #value, new_board = minimax(game.get_board(), 3, WHITE, game)
+           #game.ai_move(new_board)
+           #print(value)
+        else:
+           pygame.display.set_caption('Your turn')
+        
+        if board.winner()!= 0:
+            print(board.winner())
+            
+            game_over(board.winner())
+            run = False
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if game.turn == WHITE: #white mane user move dibe. white hoile mouse click check
-                if not flag1 and not flag2:
-                    pygame.display.set_caption('Place a marble')
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        x, y = pygame.mouse.get_pos()
-                        row, col = select_row_col(x,y)
-                        if row >= 0 and row <= 5 and col >= 0 and col <= 5:
-                            board.draw(WIN,row,col)
-                            print("Selected row:", row)
-                            print("Selected col:", col)
-                            pygame.display.update()
-                            flag1 = 1
-                            print("Flag1 : ", flag1)
             
-                elif flag1 and not flag2:
-                    pygame.display.set_caption('Rotate a quadrant')
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        x, y = pygame.mouse.get_pos()
-                        print("x: ", x)
-                        print("y: ", y)
-                        grid_no, rotation = select_grid_to_rotate(x, y)
-                        if grid_no != -1:
-                            print(grid_no, rotation)
-                            board.rotate(grid_no, rotation)
-                            board.draw_cubes(WIN)
-                            flag2 = 1
-                            pygame.display.update()
-
-                elif flag1 and flag2:
-                    flag1 = 0
-                    flag2 = 0
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                print(x, y)
+                row, col = select_row_col(x,y)
+                grid_no, rotation = select_grid_to_rotate(x, y)
+                if not game.move:
+                    game.place_marble(WIN, row, col)
+                if game.move and not game.rotate:
+                    game.rotate_quad(WIN, grid_no, rotation)
+                if game.move and game.rotate:
                     game.change_turn()
-                    continue
-
-            else:
-                continue
+                board.get_valid_moves()
+                
                 
                 
 
