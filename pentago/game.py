@@ -15,10 +15,6 @@ class Game:
         self.board.draw_cubes(self.win)
         pygame.display.update()
         
-    """""
-    def winner(self):
-        return self.board.winner()
-    """
     def change_turn(self):
         self.move = False
         self.rotate = False
@@ -29,15 +25,14 @@ class Game:
         else:
             pygame.display.set_caption('AI Turn')
             self.turn=BLACK
-            
-
 
     def get_board(self):
         return self.board
     
-    def ai_move(self, board):
+    def ai_move(self, board, mode):
         pygame.display.set_caption('AI Turn')
-        #pygame.time.delay(5000)
+        if(mode==3):
+            pygame.time.delay(2000)
         self.board = board
         self.update()
         self.change_turn()

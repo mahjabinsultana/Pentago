@@ -52,7 +52,6 @@ def AlphaBeta(position, depth, max_player, game, alpha=float('-inf'), beta=float
         transposition_table[pos_key] = (minEval, best_move)
         return minEval, best_move
 
-# Implementing Iterative Deepening
 def iterative_deepening(position, max_depth, max_player, game):
     best_move = None
     for depth in range(1, max_depth + 1):
@@ -184,48 +183,75 @@ def get_all_move(board, color, game):
 
 
 def evaluate(board):
-    if check_win(board, 1) and check_win(board, -1):
-        return 10
-    if check_win(board, 1):
-        return 5
-    if check_win(board, -1):
-        return -5
+    #if check_win(board, 1) and check_win(board, -1):
+    #    return 10
+    if check_win(board)==1:
+        return 1000
+    if check_win(board)==-1:
+        return -1000
     if is_board_full(board):
         return 0
     # Further evaluation logic for intermediate states
     score = 0
-    if check_4_in_a_row(board, 1):
-        score += 3
-    if check_4_in_a_row(board, -1):
-        score -= 3
-    if check_3_in_a_row(board, 1):
-        score += 1
-    if check_3_in_a_row(board, -1):
-        score -= 1
+    score = 0
+    score += check_4_in_a_row(board, 1) * 50
+    score -= check_4_in_a_row(board, -1) * 50
+    score += check_3_in_a_row(board, 1) * 10
+    score -= check_3_in_a_row(board, -1) * 10
+
     return score
 
-def check_win(board, player):
-    # Check rows, columns and diagonals for a win
-    board = board.board
-    for row in range(len(board)):
-        for col in range(len(board[row]) - 4 + 1):
-            if all(board[row][col + i] == player for i in range(4)):
-                return True
+def check_win(board):
+        board = board.board
+        for row in range(6):
+            for col in range(2):
+                if all(board[row][col+i] == 1 for i in range(5)):
+                    return 1
 
-    for col in range(len(board[0])):
-        for row in range(len(board) - 4 + 1):
-            if all(board[row + i][col] == player for i in range(4)):
-                return True
+        # Check vertical
+        for col in range(6):
+            for row in range(2):
+                if all(board[row+i][col] == 1 for i in range(5)):
+                    return 1
 
-    for row in range(len(board) - 4 + 1):
-        for col in range(len(board[row]) - 4 + 1):
-            if all(board[row + i][col + i] == player for i in range(4)):
-                return True
-            if all(board[row + 3 - i][col + i] == player for i in range(4)):
-                return True
+        # Check main diagonal
+        for row in range(2):
+            for col in range(2):
+                if all(board[row+i][col+i] == 1 for i in range(5)):
+                    return 1
 
-    return False
+        # Check anti-diagonal
+        for row in range(2):
+            for col in range(4, 6):
+                if all(board[row+i][col-i] == 1 for i in range(5)):
+                    return 1
 
+
+        # Check horizontal
+        for row in range(6):
+            for col in range(2):
+                if all(board[row][col+i] == -1 for i in range(5)):
+                    return -1
+
+        # Check vertical
+        for col in range(6):
+            for row in range(2):
+                if all(board[row+i][col] == -1 for i in range(5)):
+                    return -1
+
+        # Check main diagonal
+        for row in range(2):
+            for col in range(2):
+                if all(board[row+i][col+i] == -1 for i in range(5)):
+                    return -1
+
+        # Check anti-diagonal
+        for row in range(2):
+            for col in range(4, 6):
+                if all(board[row+i][col-i] == -1 for i in range(5)):
+                    return -1
+        
+        return 0
 def is_board_full(board):
     board = board.board
     return all(cell != 0 for row in board for cell in row)
@@ -251,7 +277,7 @@ def check_4_in_a_row(board, player):
             if all(board[row + 3 - i][col + i] == player for i in range(4)):
                 count += 1
 
-    return count > 0
+    return count
 
 def check_3_in_a_row(board, player):
     board = board.board
@@ -274,5 +300,5 @@ def check_3_in_a_row(board, player):
             if all(board[row + 2 - i][col + i] == player for i in range(3)):
                 count += 1
 
-    return count > 0
+    return count
 

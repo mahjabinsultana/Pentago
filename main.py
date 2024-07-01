@@ -73,29 +73,6 @@ def select_grid_to_rotate(x,y):
         rotate = "anticlockwise"
     return grid_no,rotate
 
-"""
-def game_over(winner): # when game is over it is called, winner name will showed in the display
-    screen = pygame.display.set_mode((800, 600))
-    font = pygame.font.SysFont(None, 48)  # None uses the default font, 48 is the size
-    
-    if(winner == -1):
-        print("user won")
-        text = "You have WON!!!"
-        text_surface = font.render(text, True, WHITE)
-        text_rect = text_surface.get_rect(center=(400, 300))  # Center the text at (400, 300)
-        screen.blit(text_surface, text_rect)
-        #pygame.display.flip()
-
-    else:
-        print("AI won")
-        text = "Computer has WON!!!"
-        text_surface = font.render(text, True, WHITE)
-        text_rect = text_surface.get_rect(center=(400, 300))  # Center the text at (400, 300)
-        screen.blit(text_surface, text_rect)
-        #pygame.display.flip()
-    pygame.display.update()
-"""
-
 
 def game_over(winner): 
     screen = pygame.display.set_mode((800, 600))
@@ -103,30 +80,26 @@ def game_over(winner):
 
     if winner == -1:
         print("user won")
-        text = "You have WON!!!"
+        screen = pygame.transform.scale(pygame.image.load('pentago/img/youwon.png'), (WIDTH,HEIGHT))
+        WIN.blit(screen,(0,0))
+        pygame.display.update()
     else:
         print("AI won")
-        text = "Computer has WON!!!"
+        screen = pygame.transform.scale(pygame.image.load('pentago/img/aiwon.png'), (WIDTH,HEIGHT))
+        WIN.blit(screen,(0,0))
+        pygame.display.update()
 
-    text_surface = font.render(text, True, WHITE)
-    text_rect = text_surface.get_rect(center=(400, 300))  # Center the text at (400, 300)
-    screen.blit(text_surface, text_rect)
-    pygame.display.update()
 
     # Event loop to wait for mouse button click
-    waiting = True
-    while waiting:
+    run = True
+    while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                waiting = False
+                pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                waiting = False
-    pygame.quit()
-    sys.exit()
-
-    
-    
-
+                x, y = pygame.mouse.get_pos()
+                if x>=710 and x<=769 and y>=52 and y<=85:
+                    in_screen()    
 
 def select_mode():
     run = True
@@ -200,7 +173,6 @@ def in_screen():
         
        
  
-
 def main_game(mode):
     run = True
     clock = pygame.time.Clock()
@@ -227,14 +199,14 @@ def main_game(mode):
                 # function call for mode 1 : Genetic algo
                 pygame.display.set_caption('AI')
                 new_board = Genetic_Algorithm(game.get_board(), WHITE, game)
-                game.ai_move(new_board)   
+                game.ai_move(new_board, mode)   
            if mode == 2:
                 # function call for mode 2: minimax algo
                 pygame.display.set_caption('AI')
                 value, new_board = minimax(game.get_board(), 2, WHITE, game)
                 print("original board ", board.board)
                 print("new board ", new_board.board)
-                game.ai_move(new_board)
+                game.ai_move(new_board, mode)
                 print("value ",value)
                 print("win ", board.winner())
 
@@ -242,7 +214,7 @@ def main_game(mode):
                 # function call for mode 3 : alpha beta pruning
                 pygame.display.set_caption('AI')
                 new_board = iterative_deepening(game.get_board(), 10, WHITE, game)
-                game.ai_move(new_board)
+                game.ai_move(new_board, mode)
         else:
            pygame.display.set_caption('Your turn')
            for event in pygame.event.get():
@@ -266,6 +238,7 @@ def main_game(mode):
         #print("game update",game.get_board())
         #print("win ", board.winner())
         if game.board.winner()!= 0:
+            pygame.time.delay(2000)
             print(game.board.winner())    
             game_over(game.board.winner())
             run=False
