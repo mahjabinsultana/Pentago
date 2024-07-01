@@ -4,7 +4,7 @@ import sys
 from pentago.constants import WIDTH, HEIGHT, BLACK, CREAM, WHITE, ROWS, SQAURE_SIZE
 from pentago.board import Board
 from pentago.game import Game
-from pentago.minimax.algo import minimax, iterative_deepening
+from pentago.minimax.algo import minimax,AlphaBeta, iterative_deepening, Genetic_Algorithm
 FPS = 60
 mode = 0
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -73,12 +73,59 @@ def select_grid_to_rotate(x,y):
         rotate = "anticlockwise"
     return grid_no,rotate
 
-
+"""
 def game_over(winner): # when game is over it is called, winner name will showed in the display
+    screen = pygame.display.set_mode((800, 600))
+    font = pygame.font.SysFont(None, 48)  # None uses the default font, 48 is the size
+    
     if(winner == -1):
         print("user won")
+        text = "You have WON!!!"
+        text_surface = font.render(text, True, WHITE)
+        text_rect = text_surface.get_rect(center=(400, 300))  # Center the text at (400, 300)
+        screen.blit(text_surface, text_rect)
+        #pygame.display.flip()
+
     else:
-        print("ai won")
+        print("AI won")
+        text = "Computer has WON!!!"
+        text_surface = font.render(text, True, WHITE)
+        text_rect = text_surface.get_rect(center=(400, 300))  # Center the text at (400, 300)
+        screen.blit(text_surface, text_rect)
+        #pygame.display.flip()
+    pygame.display.update()
+"""
+
+
+def game_over(winner): 
+    screen = pygame.display.set_mode((800, 600))
+    font = pygame.font.SysFont(None, 48)  # None uses the default font, 48 is the size
+
+    if winner == -1:
+        print("user won")
+        text = "You have WON!!!"
+    else:
+        print("AI won")
+        text = "Computer has WON!!!"
+
+    text_surface = font.render(text, True, WHITE)
+    text_rect = text_surface.get_rect(center=(400, 300))  # Center the text at (400, 300)
+    screen.blit(text_surface, text_rect)
+    pygame.display.update()
+
+    # Event loop to wait for mouse button click
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                waiting = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                waiting = False
+    pygame.quit()
+    sys.exit()
+
+    
+    
 
 
 def select_mode():
@@ -99,10 +146,13 @@ def select_mode():
                     in_screen()
                 if x>=214 and x<=593 and y>=245 and y<=310:
                     mode = 1
+                    main_game(mode)
                 if x>=214 and x<=593 and y>=332 and y<=397:
                     mode = 2
+                    main_game(mode)
                 if x>=214 and x<=593 and y>=421 and y<=485:
                     mode = 3
+                    main_game(mode)
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()    
@@ -151,7 +201,7 @@ def in_screen():
        
  
 
-def main_game():
+def main_game(mode):
     run = True
     clock = pygame.time.Clock()
     ## constant fps maintain kore game run korar jono. 
@@ -167,13 +217,32 @@ def main_game():
 
     game = Game(WIN, board)
     print("initial board ", game.get_board().board)
+    
     while run:
         clock.tick(FPS)
 
         if game.turn == WHITE:
-           pygame.display.set_caption('AI')
-           new_board = iterative_deepening(game.get_board(), 10, WHITE, game)
-           game.ai_move(new_board)
+           
+           if mode == 1:
+                # function call for mode 1 : Genetic algo
+                pygame.display.set_caption('AI')
+                new_board = Genetic_Algorithm(game.get_board(), WHITE, game)
+                game.ai_move(new_board)   
+           if mode == 2:
+                # function call for mode 2: minimax algo
+                pygame.display.set_caption('AI')
+                value, new_board = minimax(game.get_board(), 2, WHITE, game)
+                print("original board ", board.board)
+                print("new board ", new_board.board)
+                game.ai_move(new_board)
+                print("value ",value)
+                print("win ", board.winner())
+
+           if mode == 3:
+                # function call for mode 3 : alpha beta pruning
+                pygame.display.set_caption('AI')
+                new_board = iterative_deepening(game.get_board(), 10, WHITE, game)
+                game.ai_move(new_board)
         else:
            pygame.display.set_caption('Your turn')
            for event in pygame.event.get():
@@ -199,9 +268,12 @@ def main_game():
         if game.board.winner()!= 0:
             print(game.board.winner())    
             game_over(game.board.winner())
-            run = False
+            run=False
+            
 
-                    
+        
+
+          
     pygame.quit()
     
 in_screen()

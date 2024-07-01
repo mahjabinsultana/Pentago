@@ -1,10 +1,16 @@
 from copy import deepcopy
 import pygame
 from pentago.constants import WHITE, BLACK
+#from pentago.game import Game
+#from pentago.board import Board
+import random
+import copy
+
+#################  Iterative Deepening, Alpha Beta, Transposition Table implementation started
 
 transposition_table = {}
 
-def minimax(position, depth, max_player, game, alpha=float('-inf'), beta=float('inf')):
+def AlphaBeta(position, depth, max_player, game, alpha=float('-inf'), beta=float('inf')):
     pos_key = tuple(map(tuple, position.board))  # Hashable board representation
     if pos_key in transposition_table:
         return transposition_table[pos_key]
@@ -18,9 +24,10 @@ def minimax(position, depth, max_player, game, alpha=float('-inf'), beta=float('
         maxEval = float('-inf')
         best_move = None
         moves = get_all_move(position, WHITE, game)
+        #print(moves)
         moves = sorted(moves, key=lambda move: evaluate(move), reverse=True)  # Move ordering
         for move in moves:
-            evaluation = minimax(move, depth-1, False, game, alpha, beta)[0]
+            evaluation = AlphaBeta(move, depth-1, False, game, alpha, beta)[0]
             if evaluation > maxEval:
                 maxEval = evaluation
                 best_move = move
@@ -35,7 +42,7 @@ def minimax(position, depth, max_player, game, alpha=float('-inf'), beta=float('
         moves = get_all_move(position, BLACK, game)
         moves = sorted(moves, key=lambda move: evaluate(move))  # Move ordering
         for move in moves:
-            evaluation = minimax(move, depth-1, True, game, alpha, beta)[0]
+            evaluation = AlphaBeta(move, depth-1, True, game, alpha, beta)[0]
             if evaluation < minEval:
                 minEval = evaluation
                 best_move = move
@@ -49,8 +56,115 @@ def minimax(position, depth, max_player, game, alpha=float('-inf'), beta=float('
 def iterative_deepening(position, max_depth, max_player, game):
     best_move = None
     for depth in range(1, max_depth + 1):
-        _, best_move = minimax(position, depth, max_player, game)
+        _, best_move = AlphaBeta(position, depth, max_player, game)
     return best_move
+
+#################  Iterative Deepening, Alpha Beta, Transposition Table implementation ended
+
+
+
+
+#################  Minimax Algorithm implementation started
+
+def minimax(position, depth, max_player, game):
+    ##print("came to minimax")
+    if depth == 0 or position.winner() != 0:
+        ##if(position.winner()!=0):
+        ##   print("winner is ", position.winner())
+        ##print("minimax ", position.board)
+        return evaluate(position), position
+
+    if max_player:
+        maxEval = float('-inf')
+        best_move = None
+        ##print("came")
+        for move in get_all_move(position, WHITE, game):
+            evaluation = minimax(move, depth-1, False, game)[0]
+            maxEval = max(maxEval, evaluation)
+            if maxEval == evaluation:
+                best_move = move
+            
+        ##print("maxeval", best_move.board)
+        return maxEval, best_move
+    else:
+        minEval = float('inf')
+        best_move = None
+        for move in get_all_move(position, BLACK, game):
+            evaluation = minimax(move, depth-1, True, game)[0]
+            minEval = min(minEval, evaluation)
+            if minEval == evaluation:
+                best_move = move
+            
+        ##print("mineval", best_move.board)
+        return minEval, best_move
+    
+#################  Minimax Algorithm implementation ended
+
+
+
+
+
+
+################# Genetic Algorithm implementation started
+
+def Genetic_Algorithm(board, color , game):
+    print("GENETIC ALGORITHM CALLED")
+
+    # Constants for Genetic Algorithm
+    POPULATION_SIZE = 20
+    MUTATION_RATE = 0.1
+    NUM_GENERATIONS = 100
+
+    # Fitness function to evaluate the board
+    def fitness(board):
+        return evaluate(board)
+
+    # Create initial population of moves
+    def create_population(board,game):
+        return get_all_move(board, color ,game)
+
+    # Select the best moves
+    def select_population(population):
+        sorted_population = sorted(population, key=lambda move: fitness(move), reverse=True)
+        return sorted_population[:POPULATION_SIZE // 2]
+
+    # Crossover to combine two moves
+    def crossover(parent1, parent2):
+        # In this context, crossover isn't very meaningful because moves are single actions,
+        # so we'll just return one of the parents randomly
+        return random.choice([parent1, parent2])
+
+    # Mutation to introduce variations
+    def mutate(move,game,population):
+        if random.random() < MUTATION_RATE:
+            return random.choice(population)
+        return move
+
+    
+    # Genetic Algorithm to find the best move
+    population = create_population(board,game)
+    
+    for _ in range(NUM_GENERATIONS):
+        selected_population = select_population(population)
+        #print("selcted pupulationnnnnnnnnnn")
+        new_population = []
+        
+        while len(new_population) < POPULATION_SIZE:
+            parent1 = random.choice(selected_population)
+            parent2 = random.choice(selected_population)
+            child = crossover(parent1, parent2)
+            #print("crossoverrrrrrrrrrrrr")
+            child = mutate(child,game,population)
+            #print("mutatedddddddddddd")
+            new_population.append(child)
+        
+        updated_population = new_population
+    
+    best_move = max(updated_population, key=lambda move: fitness(move))
+    print("Best move of genetic algorithm")
+    print(best_move)
+    return best_move
+#################  Genetic Algorithm implementation ended
 
 
 def simulate_move(move, board, game):
