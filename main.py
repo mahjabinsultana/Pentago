@@ -4,7 +4,7 @@ import sys
 from pentago.constants import WIDTH, HEIGHT, BLACK, CREAM, WHITE, ROWS, SQAURE_SIZE
 from pentago.board import Board
 from pentago.game import Game
-from pentago.minimax.algo import minimax,AlphaBeta, iterative_deepening, Genetic_Algorithm
+from pentago.minimax.algo import AlphaBeta, iterative_deepening, Genetic_Algorithm
 FPS = 60
 mode = 0
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -203,11 +203,10 @@ def main_game(mode):
            if mode == 2:
                 # function call for mode 2: minimax algo
                 pygame.display.set_caption('AI')
-                value, new_board = minimax(game.get_board(), 2, WHITE, game)
+                new_board = iterative_deepening(game.get_board(), 3, WHITE, game)
                 print("original board ", board.board)
                 print("new board ", new_board.board)
                 game.ai_move(new_board, mode)
-                print("value ",value)
                 print("win ", board.winner())
 
            if mode == 3:

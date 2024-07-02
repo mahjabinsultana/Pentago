@@ -62,49 +62,8 @@ def iterative_deepening(position, max_depth, max_player, game):
 
 
 
-
-#################  Minimax Algorithm implementation started
-
-def minimax(position, depth, max_player, game):
-    ##print("came to minimax")
-    if depth == 0 or position.winner() != 0:
-        ##if(position.winner()!=0):
-        ##   print("winner is ", position.winner())
-        ##print("minimax ", position.board)
-        return evaluate(position), position
-
-    if max_player:
-        maxEval = float('-inf')
-        best_move = None
-        ##print("came")
-        for move in get_all_move(position, WHITE, game):
-            evaluation = minimax(move, depth-1, False, game)[0]
-            maxEval = max(maxEval, evaluation)
-            if maxEval == evaluation:
-                best_move = move
-            
-        ##print("maxeval", best_move.board)
-        return maxEval, best_move
-    else:
-        minEval = float('inf')
-        best_move = None
-        for move in get_all_move(position, BLACK, game):
-            evaluation = minimax(move, depth-1, True, game)[0]
-            minEval = min(minEval, evaluation)
-            if minEval == evaluation:
-                best_move = move
-            
-        ##print("mineval", best_move.board)
-        return minEval, best_move
-    
-#################  Minimax Algorithm implementation ended
-
-
-
-
-
-
 ################# Genetic Algorithm implementation started
+
 
 def Genetic_Algorithm(board, color , game):
     print("GENETIC ALGORITHM CALLED")
